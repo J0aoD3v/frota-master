@@ -50,7 +50,123 @@ _¹ Local de trabalho (ex: direção, hospital, fazenda escola)_
 
 ---
 
-## 🗃️ Estrutura de Dados
+## � Como Funciona a Autenticação no Sistema
+
+### ⚠️ IMPORTANTE: Fluxo de Autenticação
+
+**O sistema NÃO requer login na tela inicial!**
+
+Veja como funciona:
+
+1. **Tela Inicial (Menu)**: Exibe "Operador: não autenticado" - **ISSO É NORMAL!** ✅
+
+   - Você pode acessar todas as telas de cadastro (Usuários, Motoristas, Veículos, Relatórios)
+   - Não precisa estar logado para cadastrar ou consultar
+
+2. **Autenticação é OBRIGATÓRIA apenas para**:
+
+   - ✅ **Registrar RETIRADA de veículo** (tela Utilizações)
+   - ✅ **Registrar DEVOLUÇÃO de veículo** (tela Utilizações)
+
+3. **Como funciona na prática**:
+   - Entre na tela "Utilizações"
+   - Selecione o **Veículo** e o **Motorista** nos ComboBox
+   - Ao clicar em "Registrar Retirada" ou "Registrar Devolução"
+   - **Um popup de autenticação aparecerá** 🔐
+   - Digite login e senha de um operador cadastrado
+   - Só com autenticação válida a operação é realizada
+
+### 🎯 Fluxo Visual
+
+```
+Tela Utilizações:
+  ┌─────────────────────────────────────┐
+  │ Veículo:    [ABC-1234 ▼]           │ ← Selecione o carro
+  │ Motorista:  [João Silva ▼]         │ ← Selecione o motorista
+  │                                     │
+  │ [Registrar Retirada] ←─────────────┼─── Clica aqui
+  └─────────────────────────────────────┘
+                  │
+                  ↓
+  ┌─────────────────────────────────────┐
+  │  🔐 AUTENTICAÇÃO REQUERIDA          │
+  │                                     │
+  │  Informe suas credenciais de        │
+  │  operador para autorizar operação:  │
+  │                                     │
+  │  Login: [____________]              │ ← Digite login
+  │  Senha: [____________]              │ ← Digite senha
+  │                                     │
+  │  ⚠️ Autenticação obrigatória        │
+  │     conforme especificação          │
+  │                                     │
+  │      [Autenticar] [Cancelar]        │
+  └─────────────────────────────────────┘
+                  │
+                  ↓
+         ✅ Operação Autorizada!
+```
+
+### 📋 Requisito da Especificação
+
+Conforme item 6 da especificação:
+
+> _"Os registros (retirada e devolução) devem ser feitos por operadores do sistema, mediante autenticação por senha."_
+
+### 🧪 Usuários de Teste no Banco
+
+Se você criou vários usuários de teste e não lembra quais são:
+
+```javascript
+// No MongoDB Shell (mongosh)
+use veiculos
+db.usuarios.find().pretty()
+
+// Ou para ver só login e senha
+db.usuarios.find({}, {login: 1, senha: 1, nome: 1, _id: 0})
+```
+
+### 💡 Como Testar
+
+1. **Criar um operador** (se ainda não tiver):
+
+   - Vá em "Usuários"
+   - Cadastre: Código: 1, Nome: "Admin", Login: "admin", Senha: "1234"
+
+2. **Criar motorista e veículo** (se necessário):
+
+   - Vá em "Motoristas" → Cadastre um motorista
+   - Vá em "Veículos" → Cadastre um veículo
+
+3. **Testar autenticação**:
+
+   - Vá em "Utilizações"
+   - Selecione um veículo e um motorista
+   - Clique em "Registrar Retirada"
+   - **Popup de autenticação aparecerá** 🔐
+   - Digite: login="admin", senha="1234"
+   - Clique em "Autenticar"
+   - ✅ Se correto: Retirada registrada!
+   - ❌ Se errado: Mensagem de erro e tente novamente
+
+4. **Testar devolução**:
+   - Selecione a linha da utilizacao em aberto na tabela
+   - Clique em "Registrar Devolução"
+   - Autentique novamente
+   - ✅ Devolução registrada!
+
+### 🔧 Implementação Técnica
+
+- **Dialog de Autenticação**: `UtilizacoesController.autenticarOperador()`
+- **Interface**: `IServicoAutenticacao`
+- **Validação**: `ServicoUsuario.autenticar(login, senha)`
+- **Exceção**: `AutenticacaoException` (quando login/senha inválidos)
+- **Controle**: Operação só prossegue se autenticação for bem-sucedida
+- **Feedback**: Mostra nome do operador na mensagem de sucesso
+
+---
+
+## �🗃️ Estrutura de Dados
 
 ### Usuários (Operadores do Sistema)
 

@@ -1,6 +1,7 @@
 package controllers;
 
 import com.App;
+import excecoes.AutenticacaoException;
 import excecoes.UtilizacaoException;
 import modelo.Motorista;
 import modelo.Usuario;
@@ -14,14 +15,18 @@ import servico.ServicoVeiculo;
 import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 
 /**
  * Controller para gerenciar utilizacoes
@@ -52,7 +57,6 @@ public class UtilizacoesController implements Initializable {
     private ServicoMotorista servicoMotorista;
     private ServicoUsuario servicoUsuario;
     private ObservableList<Utilizacao> listaUtilizacoes;
-    private Usuario operadorAtual;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -61,12 +65,6 @@ public class UtilizacoesController implements Initializable {
         servicoMotorista = new ServicoMotorista();
         servicoUsuario = new ServicoUsuario();
         listaUtilizacoes = FXCollections.observableArrayList();
-
-        // Usuario padrao para testes
-        operadorAtual = servicoUsuario.buscarPorCodigo(1);
-        if (operadorAtual == null) {
-            operadorAtual = new Usuario(1, "Administrador", "admin", "123456");
-        }
 
         // Configurar colunas da tabela
         colCodigo.setCellValueFactory(new PropertyValueFactory<>("codigo"));
@@ -148,13 +146,22 @@ public class UtilizacoesController implements Initializable {
                 return;
             }
 
+            // AUTENTICACAO OBRIGATORIA
+            Usuario operador = autenticarOperador();
+            if (operador == null) {
+                exibirAviso("Operacao cancelada. Autenticacao necessaria.");
+                return;
+            }
+
             Utilizacao utilizacao = servicoUtilizacao.registrarRetirada(
                 veiculo.getPlaca(),
                 motorista.getCodigo(),
-                operadorAtual
+                operador
             );
 
-            exibirSucesso("Retirada registrada com sucesso!\nCodigo: " + utilizacao.getCodigo());
+            exibirSucesso("Retirada registrada com sucesso!\n" +
+                         "Codigo: " + utilizacao.getCodigo() + "\n" +
+                         "Operador: " + operador.getNome());
             limparCombos();
             carregarCombos();
             carregarDados();
@@ -181,8 +188,16 @@ public class UtilizacoesController implements Initializable {
                 return;
             }
 
-            servicoUtilizacao.registrarDevolucao(selecionada.getVeiculo().getPlaca(), operadorAtual);
-            exibirSucesso("Devolucao registrada com sucesso!");
+            // AUTENTICACAO OBRIGATORIA
+            Usuario operador = autenticarOperador();
+            if (operador == null) {
+                exibirAviso("Operacao cancelada. Autenticacao necessaria.");
+                return;
+            }
+
+            servicoUtilizacao.registrarDevolucao(selecionada.getVeiculo().getPlaca(), operador);
+            exibirSucesso("Devolucao registrada com sucesso!\n" +
+                         "Operador: " + operador.getNome());
             limparCombos();
             carregarCombos();
             carregarDados();
@@ -192,6 +207,90 @@ public class UtilizacoesController implements Initializable {
         } catch (Exception e) {
             exibirErro("Erro ao registrar devolucao", e.getMessage());
         }
+    }
+
+    /**
+     * Exibe dialog de autenticacao e retorna o usuario autenticado.
+     * Retorna null se a autenticacao falhar ou for cancelada.
+     */
+    private Usuario autenticarOperador() {
+        // Criar dialog customizado
+        Dialog<Usuario> dialog = new Dialog<>();
+        dialog.setTitle("Autenticacao Requerida");
+        dialog.setHeaderText("Informe suas credenciais de operador\npara autorizar esta operacao:");
+
+        // Definir botoes
+        ButtonType loginButtonType = new ButtonType("Autenticar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
+
+        // Criar campos do formulario
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField txtLogin = new TextField();
+        txtLogin.setPromptText("Login");
+        PasswordField txtSenha = new PasswordField();
+        txtSenha.setPromptText("Senha");
+
+        grid.add(new Label("Login:"), 0, 0);
+        grid.add(txtLogin, 1, 0);
+        grid.add(new Label("Senha:"), 0, 1);
+        grid.add(txtSenha, 1, 1);
+
+        // Adicionar icone de aviso
+        Label avisoLabel = new Label("⚠️ Autenticacao obrigatoria conforme especificacao");
+        avisoLabel.setStyle("-fx-text-fill: #e67e22; -fx-font-size: 10px;");
+        grid.add(avisoLabel, 0, 2, 2, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Focar no campo de login ao abrir
+        Platform.runLater(() -> txtLogin.requestFocus());
+
+        // Desabilitar botao de login se campos vazios
+        javafx.scene.Node loginButton = dialog.getDialogPane().lookupButton(loginButtonType);
+        loginButton.setDisable(true);
+
+        txtLogin.textProperty().addListener((observable, oldValue, newValue) -> {
+            loginButton.setDisable(newValue.trim().isEmpty() || txtSenha.getText().trim().isEmpty());
+        });
+        
+        txtSenha.textProperty().addListener((observable, oldValue, newValue) -> {
+            loginButton.setDisable(newValue.trim().isEmpty() || txtLogin.getText().trim().isEmpty());
+        });
+
+        // Converter resultado quando OK for pressionado
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == loginButtonType) {
+                try {
+                    return servicoUsuario.autenticar(txtLogin.getText(), txtSenha.getText());
+                } catch (AutenticacaoException e) {
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Falha na Autenticacao");
+                        alert.setHeaderText(null);
+                        alert.setContentText("❌ " + e.getMessage() + "\n\nTente novamente.");
+                        alert.showAndWait();
+                    });
+                    return null;
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Erro");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Erro ao autenticar: " + e.getMessage());
+                        alert.showAndWait();
+                    });
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        Optional<Usuario> resultado = dialog.showAndWait();
+        return resultado.orElse(null);
     }
 
     @FXML
