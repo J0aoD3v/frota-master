@@ -1,0 +1,65 @@
+Programação II - Especificação do Projeto Final
+O projeto consiste em desenvolver um programa orientado a objetos com Java FX e banco
+de dados MongoDB.
+O software deve controlar a utilização dos veículos da UENP (campus Bandeirantes).
+Problema: eventualmente, aparecem algumas multas e é necessário saber quem foi o
+motorista que cometeu a infração.
+Descrição do Sistema
+1. Os diversos veículos devem ser cadastrados no sistema (marca, modelo, placa)
+2. Os usuários dos veículos (motoristas) devem ser cadastrados no sistema para poderem
+utilizar um carro (nome, endereço, CNH, setor1)
+3. Os usuários (operadores) do sistema devem ser cadastrado no sistema (código, nome,
+login e senha)
+4. Quando um usuário retirar um veículo, deve ser registrado no sistema o utilizador
+(motorista), a data e horário da retirada.
+5. Quando o usuário devolver o veículo, deve ser registrado a data e horário da
+devolução.
+6. Os registros (retirada e devolução) devem ser feitos por operadores do sistema,
+mediante autenticação por senha.
+7. Deve ser possível saber, a qualquer momento, quem utilizou o veículo em
+determinada data.
+8. Deve ser possível, dada uma placa, listar todas as utilizações, por ordem
+crescente.
+Alguns Critérios de avaliação:
+1. As classes devem ser empacotadas: classes de mesma natureza devem estar no
+mesmo pacote.
+2. O código deve ser padronizado: diferenciar maiúsculas de minúsculas. Exemplo: se o
+nome de uma tela estiver em minúscula, todas as telas devem estar em minúsculas (ou
+vice-versa). Utilizar o padrão Java: classes e interfaces em maiúsculas, métodos,
+pacotes, variáveis em minúsculas.
+3. Utilize identificadores significativos: ao ver o nome da classe, método ou variável,
+deve-se ter ideia do que representa.
+4. Deverá haver interface gráfica feita com Java FX. Todas as entradas e saídas devem
+ser feitas por meio da interface gráfica.
+5. Se for para enfeitar, espere ficar funcionando para fazer isso (utilize css).
+6. Se utilizar github, deixar repositório privado
+1 Local de trabalho, por exemplo: direção, hospital, fazenda escola…
+
+Os seguintes conceitos devem estar presentes no programa
+1. Pacotes
+2. Classes e métodos
+3. Sobrecarga
+4. Encapsulamento
+5. Programação genérica
+6. Tratamento de exceções
+7. Polimorfismo (se possível)
+8. Reutilização
+9. Interfaces
+10. Princípios SOLID e padrões de projeto (se possível)
+- O trabalho exige:
+- Objetividade
+- Baixo acoplamento
+- Desenvolvimento incremental
+Forma de avaliação:
+A avaliação será contínua. O projeto deverá ser desenvolvido em sala de aula e, havendo
+necessidade, fora de sala.
+Pontos de verificação:
+14/10/2025 - Cadastro de Usuários
+21/10/2025 - Cadastro de Motoristas
+28/10/2025 - Cadastro de Veículos
+04/11/2025 - Cadastro de Retiradas e Devoluções
+11/11/2025 - Busca de utilização
+A apresentação final deve ser feita até a data estipulada no cronograma. Isto quer dizer que
+pode ser antecipada…
+Esqueleto do projeto: https://github.com/merlinuenp/frota
+

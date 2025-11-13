@@ -1,0 +1,175 @@
+Programação II
+Projeto Final
+
+Especificação
+● Desenvolver um projeto com interface gráfica e banco de dados
+MongoDB para gerenciamento da frota de veículos da UENP
+● Prazo:
+○ até 25/11/2025 a 04/12/2025 * (sujeita a alteração)
+● Avaliação
+○ contínua durante as aulas
+○ apresentação final
+
+Especificação
+● O software deve controlar a utilização dos veículos da UENP
+(campus Bandeirantes)
+● Problema: eventualmente aparecem algumas multas e é necessário
+saber quem foi o motorista que cometeu a infração.
+
+Especificação
+● Funcionalidades
+○ Gerenciar usuários (funcionários que vão operar o sistema)
+○ Gerenciar motoristas
+○ Gerenciar veículos
+○ Gerenciar utilização
+
+Especificação
+● Dados dos usuários
+○ login
+○ nome
+○ senha
+
+Especificação
+● Dados de motorista
+○ código
+○ nome
+○ CNH
+○ setor
+
+Especificação
+● Dados de veículos
+○ Placa
+○ Marca
+○ Modelo
+
+Especificação
+● Dados de utilização
+○ código
+○ veículo
+○ motorista
+○ data retirada
+○ data devolução
+
+Sugestão de Tela
+● Tela de retirada de veículo
+
+MongDB
+● Utilizar
+○ JavaFX
+○ MongoDB
+● MongoDB é um sistema de gerenciamento de banco de dados
+● Não é o objetivo conhecer MongoDB, apenas ter uma solução
+para persistir objetos…
+● Por isso, vamos abstrair uma série de detalhes…
+
+MongDB
+● Instalar MongoDB Community Edition
+www.mongodb.com/products/self-managed/community-edition
+● Instalador
+https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.2.0-signe
+d.msi
+● Instalar MongoDBCompass: ferramenta com interface gráfica para
+interagir com o MongoDB (opcional)
+https://downloads.mongodb.com/compass/mongodb-compass-1.46.11-win
+32-x64.exe
+
+MongDB
+● Banco de dados (database):
+○ um conjunto de coleções
+● Coleção:
+○ um conjunto de objetos
+● Documento:
+○ um objeto
+
+Configurando o Projeto
+● Crie um projeto com JavaFX como de costume…
+
+Configurando o Projeto
+● Adicione as dependências no pom.xml
+
+Classe Dao
+● Desenvolver um sistema orientado a objetos é criar classes e
+atribuir responsabilidades
+● Precisamos de uma classe responsável por inserir, alterar,
+consultar, excluir e listar os objetos salvos no banco
+● Essa classe será a Dao (ou qualquer outro nome que você preferir)
+● Dao - Data Access Object: encapsula o acesso ao banco para que a
+aplicação possa se comunicar com ele
+
+Classe Dao
+● Em outras palavras:
+○ O restante da aplicação não precisa saber como realizar as
+operações
+○ Basta instanciar um objeto Dao e chamar os métodos
+apropriados…
+● Não precisamos saber os detalhes da classe, apenas seus
+métodos
+○ O que eles recebem e o que eles retornam
+
+Classe Dao
+● Na aplicação precisamos persistir usuários, motoristas, veículos…
+● Mesmas operações, objetos diferentes
+● Situação para classe genérica
+○ Quando quisermos persistir um objetos, utilizamos o tipo
+apropriado
+Dao<Veiculo> daoVeiculo = new Dao(Veiculo.class);
+Dao<Usuario> daoUsuario = new Dao(Usuario.class);
+
+Classe Dao
+● Classe
+public class Dao <T> {
+host / porta
+private final Class<T> classe;
+private final String URI = "mongodb://localhost:27017";
+private final String DATABASE = "veiculos";
+private final MongoClient mongoClient;
+private final MongoDatabase database;
+
+Classe Dao
+● Classe
+public class Dao <T> {
+nome do banco
+private final Class<T> classe;
+private final String URI = "mongodb://localhost:27017";
+private final String DATABASE = "veiculos";
+private final MongoClient mongoClient;
+private final MongoDatabase database;
+
+Classe Dao
+● Construtor
+○ Recebe a classe dos objetos que serão persistidos
+● Por isso
+Dao<Veiculo> daoVeiculo = new Dao(Veiculo.class);
+
+Classe Dao
+● Exemplos de operações:
+○ Inserir um objeto
+○ Listar todos os objetos existentes no banco
+
+Classe Veiculo
+● Mongo salva os objetos no formato BSON
+● BSON: Binary JavaScript Object Notation (Binary JSON)
+● Formato para armazenar documentos binários no MongoDB
+● Constituído de chave + valor
+
+Observações
+● A classe Dao não faz tratamento de exceções
+○ Exemplo: não deve ser permitido inserir dois veículos com
+a mesma placa
+● Podem ser necessários outros métodos na classe Dao
+● Não se preocupe com a estética (por enquanto)
+
+Primeira Meta
+● Criar e configurar o projeto
+● Adicionar dependências, etc
+● Criar a classe Dao
+● Cadastrar usuário
+● Criar a classe usuário
+● Cadastrar um ou dois usuários
+● Primeiro por teste de unidade
+● Depois, por meio da interface gráfica
+
+Esqueleto…
+● Projeto iniciado
+https://github.com/merlinuenp/frota
+
